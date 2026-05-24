@@ -2,6 +2,10 @@ import socket
 import time
 from pathlib import Path
 
+# Which extensions to check
+CHECK_COM = False
+CHECK_NO = True
+
 # WHOIS servers
 WHOIS_SERVERS = {
     ".com": "whois.verisign-grs.com",
@@ -93,23 +97,20 @@ def main():
 
     for domain in domains:
         print(f"Domain: {domain}")
-        com_available = is_domain_available(domain, ".com")
-        no_available = is_domain_available(domain, ".no")
+        com_available = is_domain_available(domain, ".com") if CHECK_COM else None
+        no_available = is_domain_available(domain, ".no") if CHECK_NO else None
 
-        if com_available and no_available:
+        if (com_available or not CHECK_COM) and (no_available or not CHECK_NO):
             available_both.append(domain)
-            print(f"  ✅ {domain}: BOTH .com and .no are available\n")
+            checked = " and ".join(filter(None, [".com" if CHECK_COM else "", ".no" if CHECK_NO else ""]))
+            print(f"  ✅ {domain}: {checked} {'are' if CHECK_COM and CHECK_NO else 'is'} available\n")
         else:
             not_available_both.append(domain)
             status = []
-            if com_available:
-                status.append(".com available")
-            else:
-                status.append(".com taken")
-            if no_available:
-                status.append(".no available")
-            else:
-                status.append(".no taken")
+            if CHECK_COM:
+                status.append(".com available" if com_available else ".com taken")
+            if CHECK_NO:
+                status.append(".no available" if no_available else ".no taken")
             print(f"  ℹ️  {domain}: {', '.join(status)}\n")
 
     # Write results to files
@@ -124,13 +125,14 @@ def main():
                 f.write(d + "\n")
 
     print("=" * 50)
+    checked = " and ".join(filter(None, [".com" if CHECK_COM else "", ".no" if CHECK_NO else ""]))
     print("Summary:")
     if available_both:
-        print(f"✅ Domains available for BOTH .com and .no:")
+        print(f"✅ Domains available for {checked}:")
         for d in available_both:
             print(f"   - {d}")
     else:
-        print("❌ No domains were available for both extensions.")
+        print(f"❌ No domains were available for {checked}.")
 
 
 if __name__ == "__main__":
