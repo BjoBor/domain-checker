@@ -12,7 +12,7 @@ WHOIS_SERVERS = {
     ".no": "whois.norid.no",
 }
 
-REQUEST_DELAY_SECONDS = 0.5
+REQUEST_DELAY_SECONDS = 0.1
 _last_request_time = 0.0
 
 
